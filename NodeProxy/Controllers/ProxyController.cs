@@ -19,10 +19,12 @@ namespace NodeProxy.Controllers
         public ProxyController(IMediator mediator) => _mediator = mediator;
         
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody] SoapCommand command)
+        public async Task<IActionResult> Post([FromBody]SoapCommand command)
         {
-            command.Headers.Add("authorization", Request.Headers["authorization"]);
-            command.Headers.Add("soapaction", Request.Headers["soapaction"]);
+            Request.Headers.TryGetValue("Authorization", out var authHeader);
+            Request.Headers.TryGetValue("soapaction", out var soapaction);
+            command.Headers.Add("authorization", authHeader);
+            command.Headers.Add("soapaction", soapaction);
             var result = await _mediator.Send(command).ConfigureAwait(false);
             return Ok(result);
 

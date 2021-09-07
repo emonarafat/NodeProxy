@@ -25,7 +25,7 @@ namespace NodeProxy.Features.SoapFeature
     public class SoapCommand : SoapRequestModel, IRequest<ResponseModel.WithData<object>>
     {
         [JsonIgnore]
-        public IHeaderDictionary Headers { get; set; }
+        public IHeaderDictionary Headers { get; set; }=new HeaderDictionary();
 
         public class SoapCommandHandler : IRequestHandler<SoapCommand, ResponseModel.WithData<object>>
         {

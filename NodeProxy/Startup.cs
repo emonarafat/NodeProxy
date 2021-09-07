@@ -52,8 +52,10 @@ namespace NodeProxy
                                                                              .SetPreflightMaxAge(TimeSpan.FromSeconds(2520))));
             services.AddSwaggerGen(c =>
             {
+               
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "NodeProxy", Version = "v1" });
             });
+            services.AddSwaggerGenNewtonsoftSupport();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
