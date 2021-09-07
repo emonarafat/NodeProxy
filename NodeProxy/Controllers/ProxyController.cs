@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace NodeProxy.Controllers
 {
-    [Route("api")]
+    [Route("api/proxy")]
     [ApiController]
     public class ProxyController : ControllerBase
     {
