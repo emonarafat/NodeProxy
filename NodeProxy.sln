@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31612.314
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NodeProxy", "NodeProxy\NodeProxy.csproj", "{FA0B958C-F130-4CEA-A3AE-9482F1C39256}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FA0B958C-F130-4CEA-A3AE-9482F1C39256}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA0B958C-F130-4CEA-A3AE-9482F1C39256}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA0B958C-F130-4CEA-A3AE-9482F1C39256}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA0B958C-F130-4CEA-A3AE-9482F1C39256}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {39789338-760D-45D7-A470-B7C5DCCE6F1B}
+	EndGlobalSection
+EndGlobal
