@@ -1,11 +1,9 @@
-﻿using FluentValidation;
+﻿using MediatR;
 
-using MediatR;
-
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-
-using NodeProxy.Features.SoapFeature;
 using NodeProxy.Models;
+using NodeProxy.Features.SoapFeature;
 
 using System.Threading.Tasks;
 
@@ -17,17 +15,28 @@ namespace NodeProxy.Controllers
     {
         private readonly IMediator _mediator;
         public ProxyController(IMediator mediator) => _mediator = mediator;
-        
+
+        ///<summary>
+        ///   Post to Soap endpoint
+        /// <param name="command"><see cref="ProxyCommand"/></param>
+        /// </summary>
+        /// <returns>Response Result</returns>
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody]SoapCommand command)
+        [ProducesResponseType(StatusCodes.Status200OK,Type =typeof(ResponseModel.WithData))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(ResponseModel.NoData))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ResponseModel.NoData))]
+        public async Task<IActionResult> Post(ProxyCommand command)
         {
             Request.Headers.TryGetValue("Authorization", out var authHeader);
             Request.Headers.TryGetValue("soapaction", out var soapaction);
-            command.Headers.Add("authorization", authHeader);
-            command.Headers.Add("soapaction", soapaction);
-            var result = await _mediator.Send(command).ConfigureAwait(false);
-            return Ok(result);
 
+            command.Authorization = authHeader;
+            command.SoapAction = soapaction;
+
+            var result = await _mediator.Send(command).ConfigureAwait(false);
+
+            return result.IsSuccess.GetValueOrDefault()
+                ? Ok(result) : BadRequest(result);
 
         }
     }

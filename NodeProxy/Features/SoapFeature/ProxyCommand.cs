@@ -2,10 +2,9 @@
 
 using MediatR;
 
-using Microsoft.AspNetCore.Http;
-
 using Newtonsoft.Json;
 
+using NodeProxy.Extensions;
 using NodeProxy.Models;
 
 using System;
@@ -22,26 +21,23 @@ using System.Xml.Linq;
 namespace NodeProxy.Features.SoapFeature
 {
 
-    public class SoapCommand : SoapRequestModel, IRequest<ResponseModel.WithData<object>>
+    public class ProxyCommand : SoapRequestModel, IRequest<ResponseModel.WithData>
     {
-        [JsonIgnore]
-        public IHeaderDictionary Headers { get; set; }=new HeaderDictionary();
-
-        public class SoapCommandHandler : IRequestHandler<SoapCommand, ResponseModel.WithData<object>>
+        public class ProxyCommandHandler : IRequestHandler<ProxyCommand, ResponseModel.WithData>
         {
             private readonly HttpClient _httpClient;
-            private readonly IValidator<SoapCommand> _validator;
-            public SoapCommandHandler(IValidator<SoapCommand> validator)
+            private readonly IValidator<ProxyCommand> _validator;
+            public ProxyCommandHandler(IValidator<ProxyCommand> validator)
             {
                 this._httpClient = new HttpClient(new HttpClientHandler() { AutomaticDecompression = System.Net.DecompressionMethods.All });
                 _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/xml"));
                 _validator = validator;
             }
 
-            public async Task<ResponseModel.WithData<object>> Handle(SoapCommand request, CancellationToken cancellationToken)
+            public async Task<ResponseModel.WithData> Handle(ProxyCommand request, CancellationToken cancellationToken)
             {
-                var validationResult = await _validator.ValidateAsync(request,cancellationToken);
-                var responseData = new ResponseModel.WithData<object>();
+                var validationResult = await _validator.ValidateAsync(request, cancellationToken);
+                var responseData = new ResponseModel.WithData();
                 List<string> ValidationMessages = new();
                 if (!validationResult.IsValid)
                 {
@@ -54,22 +50,33 @@ namespace NodeProxy.Features.SoapFeature
                 _httpClient.BaseAddress = new Uri(request.ServiceUrl);
                 var content = new StringContent(request.Xml, Encoding.UTF8, "text/xml");
                 var _request = new HttpRequestMessage() { Content = content, Method = HttpMethod.Post };
-                request.Headers.TryGetValue("authorization", out var authorization);
-                request.Headers.TryGetValue("soapaction", out var soapaction);
-                _request.Headers.Add("Authorization", authorization.ToString());
-                _request.Headers.Add("SOAPAction", soapaction.ToString());
+                _request.Headers.Add("Authorization", request.Authorization);
+                _request.Headers.Add("SOAPAction", request.SoapAction);
 
                 var response = await _httpClient.SendAsync(_request, cancellationToken);
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode)
+                {
+                 
+                   
+                    responseData.StatusCode = (int)response.StatusCode;
+                    responseData.Message = "Error Accessing Soap Url and action";
+                    responseData.IsSuccess = false;
+                    return responseData;
+                }
+                try
                 {
                     var resp = await response.Content.ReadAsStringAsync(cancellationToken);
                     var doc = XDocument.Load(resp);
                     var jsonText = JsonConvert.SerializeXNode(doc);
                     dynamic dyn = JsonConvert.DeserializeObject<ExpandoObject>(jsonText);
-                    return new ResponseModel.WithData<dynamic>(dyn);
+                    return new ResponseModel.WithData(dyn);
                 }
-                responseData.IsSuccess = false;
-                return responseData;
+                catch(Exception ex)
+                {
+                    responseData.Message = ex.Message;
+                    responseData.IsSuccess = false;
+                    return responseData;
+                }
             }
         }
     }
